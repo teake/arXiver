@@ -2,8 +2,7 @@
 
 -- check if Growl is running
 tell application "System Events"
-	set growlIsRunning to Â
-		(count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
+	set growlIsRunning to (count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
 end tell
 -- register a Growl notification
 if growlIsRunning then
@@ -121,12 +120,7 @@ on adding folder items to this_folder after receiving added_items
 						end tell
 						if growlIsRunning then
 							tell application id "com.Growl.GrowlHelperApp"
-								notify with name Â
-									"archived" title Â
-									"PDF archived" description Â
-									(fileName & " has been archived as \"" & paperAuthors & " - " & paperTitle & "\"") Â
-										application name Â
-									"arXiver script" icon of application "Preview"
+								notify with name 	"archived" title "PDF archived" description (fileName & " has been archived as \"" & paperAuthors & " - " & paperTitle & "\"") application name "arXiver script" icon of application "Preview"
 							end tell
 						end if
 						
