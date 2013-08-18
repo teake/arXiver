@@ -16,7 +16,8 @@ How to install
 
 1. Download the [arXiver applescript file](https://raw.github.com/teake/arXiver/master/arXiver.applescript), 
    and open it with the AppleScript Editor. 
-2. Adjust the `destination` variable to where you want to the PDFs after hey have been removed.
+2. Adjust the `archiveDir` variable to where you want to the PDFs after hey have been removed (note: this should be 
+   a POSIX path, not an alias).
 3. Save the script as a compiled script (the `Script` file format) in `~/Library/Scripts/Folder Action Scripts`. 
    If this directory doesn't exist, create it.
 4. (Optional) Run the script once from the Applescript Editor in order to register the Growl notifications. 
