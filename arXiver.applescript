@@ -1,27 +1,13 @@
--- Running this script once will register a Growl notification.
-
--- check if Growl is running
-tell application "System Events"
-	set growlIsRunning to (count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
-end tell
--- register a Growl notification
-if growlIsRunning then
-	tell application id "com.Growl.GrowlHelperApp"
-		register as application "arXiver script" all notifications {"archived"} default notifications {"archived"} icon of application "Preview"
-	end tell
-end if
-
--- This is called when items are added to the watched folder.
 on adding folder items to this_folder after receiving added_items
 	
-	-- change 'destination' to where you want to move the rename pdf
-	set destination to "Root:Users:Teake:Dropbox:Papers:"
+	-- Change 'archiveDir' to where you want to move the renamed PDF.
+	set archiveDir to "~/Dropbox/Papers/"
 	
-	-- don't change this
+	-- Don't change this.
+	set archiveDir to ((POSIX file (do shell script "cd " & archiveDir & "; pwd")) as string) & ":"
 	set arxivURLprefix to "http://arxiv.org/pdf/"
 	set tid to AppleScript's text item delimiters
 	
-	try
 		-- loop over the added items
 		repeat with currentFile in added_items
 			
@@ -37,11 +23,6 @@ on adding folder items to this_folder after receiving added_items
 				if (fileExtension is not "pdf") then
 					exit repeat
 				end if
-				
-				tell application "Preview"
-					activate
-					open currentFile
-				end tell
 				
 				-- get the whereFroms metadata with mdls
 				set whereFroms to do shell script "mdls -name kMDItemWhereFroms " & (quoted form of POSIX path of currentFile)
@@ -106,21 +87,20 @@ on adding folder items to this_folder after receiving added_items
 				
 				-- move the file
 				tell application "Finder"
-					if (exists file (destination & newName)) then
+					if (exists file (archiveDir & newName)) then
 						move currentFile to trash
 					else
-						move currentFile to destination
-						set movedFile to alias (destination & fullName)
+						move currentFile to archiveDir
+						set movedFile to alias (archiveDir & fullName)
 						set name of movedFile to newName
 						
 						--display a growl notification
 						tell application "System Events"
-							set growlIsRunning to Â
-								(count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
+							set growlIsRunning to (count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
 						end tell
 						if growlIsRunning then
 							tell application id "com.Growl.GrowlHelperApp"
-								notify with name 	"archived" title "PDF archived" description (fileName & " has been archived as \"" & paperAuthors & " - " & paperTitle & "\"") application name "arXiver script" icon of application "Preview"
+								notify with name "archived" title "PDF archived" description (fileName & " has been archived as \"" & paperAuthors & " - " & paperTitle & "\"") application name "arXiver script" icon of application "Preview"
 							end tell
 						end if
 						
@@ -130,25 +110,34 @@ on adding folder items to this_folder after receiving added_items
 			end repeat -- fake repeat
 		end repeat -- added items repeat
 		
-	end try
 end adding folder items to
+
+
+-- The code below registers a Growl notification.
+
+-- Check if Growl is running.
+tell application "System Events"
+	set growlIsRunning to (count of (every process whose bundle identifier is "com.Growl.GrowlHelperApp")) > 0
+end tell
+-- Register a Growl notification.
+if growlIsRunning then
+	tell application id "com.Growl.GrowlHelperApp"
+		register as application "arXiver script" all notifications {"archived"} default notifications {"archived"} icon of application "Preview"
+	end tell
+end if
 
 
 --XML helper functions below
 
+-- find and return all instatnces of a particular element
 on getElements(theXML, theElementName)
-	-- find and return all instatnces of a particular element
-	
 	local theResult
-	
 	set theResult to {}
 	repeat with anElement in XML contents of theXML
-		if class of anElement is XML element and Â
-			XML tag of anElement is theElementName then
+		if class of anElement is XML element and XML tag of anElement is theElementName then
 			set end of theResult to contents of anElement
 		end if
 	end repeat
-	
 	return theResult as list
 end getElements
 
@@ -166,15 +155,12 @@ on getElementValue(theXML)
 	end if
 end getElementValue
 
+-- find and return a particular element (this presumes there is only one instance of the element)
 on getAnElement(theXML, theElementName)
-	-- find and return a particular element (this presumes there is only one instance of the element)
-	
 	repeat with anElement in XML contents of theXML
-		if class of anElement is XML element and Â
-			XML tag of anElement is theElementName then
+		if class of anElement is XML element and XML tag of anElement is theElementName then
 			return contents of anElement
 		end if
 	end repeat
-	
 	return missing value
 end getAnElement
